@@ -17,7 +17,7 @@ import voluptuous as vol
 
 _LOGGER = logging.getLogger(__name__)
 
-MIN_TIME_BETWEEN_UPDATES = timedelta(seconds=60)
+MIN_TIME_BETWEEN_UPDATES = timedelta(seconds=5)
 
 DEFAULT_NAME = 'Inkbird'
 
