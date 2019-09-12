@@ -68,7 +68,7 @@ class InkbirdDataRequest(object):
         """Update the data from the thermometer."""
         try:
             dev = btle.Peripheral(self.mac)
-            readings = dev.readCharacteristic(40)
+            readings = dev.readCharacteristic(45)
         except BTLEException as error:
             _LOGGER.error("Error occurred while fetching data: %s", error)
             return False
