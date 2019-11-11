@@ -25,6 +25,7 @@ DEFAULT_NAME = 'Inkbird'
 SENSOR_TYPES = {
     'temperature': [DEVICE_CLASS_TEMPERATURE, 'Temperature', '°C'],
     'humidity': [DEVICE_CLASS_HUMIDITY, 'Humidity', '%'],
+    'battery': [DEVICE_CLASS_BATTERY, 'Battery', '%'],
 }
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
@@ -62,6 +63,7 @@ class InkbirdDataRequest(object):
         self.mac = mac
         self.temperature = None
         self.humidity = None
+        self.battery = None
 
     @Throttle(MIN_TIME_BETWEEN_UPDATES)
     def update(self):
@@ -69,13 +71,17 @@ class InkbirdDataRequest(object):
         try:
             dev = btle.Peripheral(self.mac)
             readings = dev.readCharacteristic(45)
+            battery_reading = dev.readCharacteristic(3)
         except BTLEException as error:
             _LOGGER.error("Error occurred while fetching data: %s", error)
             return False
         _LOGGER.debug("raw readings is %s", readings)
+        _LOGGER.debug("raw battery reading is %s", battery_reading)
         temperature, humidity = unpack("<HH",readings[0:4])
         self.temperature = temperature/100
         self.humidity = humidity/100
+        _battery = battery_reading.decode('latin1')
+        self.battery = ord(_battery)
         return True
 
 class InkbirdSensor(Entity):
@@ -90,6 +96,7 @@ class InkbirdSensor(Entity):
         self.parameter = parameter
         self._current_temperature = None
         self._current_humidity = None
+        self._current_battery = None
         self.update()
         self._state = None
 
@@ -117,6 +124,11 @@ class InkbirdSensor(Entity):
     def current_humidity(self):
         """Return the state of the sensor."""
         return self._current_humidity
+
+    @property
+    def current_battery(self):
+        """Return the state of the sensor."""
+        return self._current_battery        
 
     @property
     def temperature_unit(self):
